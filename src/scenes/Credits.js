@@ -1,4 +1,5 @@
 // http://127.0.0.1:5500/?mode=creditsScene
+// https://drullkus.github.io/phaser-postcard/?mode=creditsScene
 class Credits extends Phaser.Scene {
     constructor() {
         super('creditsScene');
