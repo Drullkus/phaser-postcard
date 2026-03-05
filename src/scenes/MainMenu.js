@@ -6,7 +6,14 @@ class MainMenu extends Phaser.Scene {
     create() {
         this.createTitle();
 
-        this.createButton("CREDITS", ...canvasPos(0.5, 0.9), {
+        this.playButton = this.createButton("PLAY", ...canvasPos(0.5, 0.6), {
+            ...menuTextStyle,
+            fontSize: `30px`,
+            backgroundColor: buttonColor,
+            padding: 10
+        }, this.playClicked);
+
+        this.creditsButton = this.createButton("CREDITS", ...canvasPos(0.5, 0.9), {
             ...menuTextStyle,
             backgroundColor: buttonColor,
             padding: 10
@@ -21,6 +28,10 @@ class MainMenu extends Phaser.Scene {
 
         this.titleText = this.add.text(...canvasPos(0.5, 0.333), "GAME TITLE", titleStyle);
         this.titleText.setOrigin(0.5);
+    }
+
+    playClicked() {
+        this.scene.start('crawlerScene');
     }
 
     creditsClicked() {

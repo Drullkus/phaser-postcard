@@ -5,6 +5,10 @@ class Initialize extends Phaser.Scene {
     }
 
     preload() {
+        this.load.path = './assets/';
+
+        this.load.image('tilesetImage', 'temp/tileset.png');
+        this.load.tilemapTiledJSON('tilemapJSON', 'temp/overworld.json');
     }
 
     create() {

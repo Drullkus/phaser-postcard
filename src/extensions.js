@@ -2,21 +2,21 @@
 
 
 Phaser.Scene.prototype.createButton = function createButton(text, posX, posY, style, onDown) {
-    const textObj = this.add.text(posX, posY, text, style);
+    const buttonTextObj = this.add.text(posX, posY, text, style);
 
-    textObj.setOrigin(0.5);
+    buttonTextObj.setOrigin(0.5);
     // TODO textObj.setStroke("#000", 10);
-    textObj.setInteractive();
+    buttonTextObj.setInteractive();
 
-    textObj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
-        textObj.setBackgroundColor(buttonColorOver);
+    buttonTextObj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
+        buttonTextObj.setBackgroundColor(buttonColorOver);
     });
 
-    textObj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
-        textObj.setBackgroundColor(buttonColor);
+    buttonTextObj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
+        buttonTextObj.setBackgroundColor(buttonColor);
     });
 
-    textObj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, onDown, this);
+    buttonTextObj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, onDown, this);
 
-    return textObj;
+    return buttonTextObj;
 };
