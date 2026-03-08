@@ -9,6 +9,8 @@ class Initialize extends Phaser.Scene {
 
         this.load.image('tilesetImage', 'temp/tileset.png');
         this.load.tilemapTiledJSON('tilemapJSON', 'temp/overworld.json');
+
+        this.load.image('koboldFace', 'temp/kobold-crop.png');
     }
 
     create() {

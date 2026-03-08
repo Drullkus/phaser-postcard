@@ -20,5 +20,9 @@ function canvasY(fractY) {
 }
 
 function canvasPos(fractX, fractY) {
+    if (fractY == null) {
+        fractY = fractX;
+    }
+
     return [canvasX(fractX), canvasY(fractY)]
 }
