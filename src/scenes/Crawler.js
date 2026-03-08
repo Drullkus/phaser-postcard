@@ -27,9 +27,16 @@ class Crawler extends Phaser.Scene {
     }
 
     createCharacter() {
-        this.character = this.physics.add.sprite(...canvasPos(0.5), 'koboldFace');
-        this.character.setScale(0.125);
-        this.character.body.setCollideWorldBounds(true);
+        // this.character = this.physics.add.sprite(...canvasPos(0.5), 'koboldFace');
+        // this.character.setScale(0.125);
+        // this.character.body.setCollideWorldBounds(true);
+
+        // setup keyboard input
+        this.keys = this.input.keyboard.createCursorKeys();
+        this.keys.HKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+        this.keys.FKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+        
+        this.character = new Hero(this, ...canvasPos(0.5), 'hero', 0, 'down');
     }
 
     setupCamera() {
@@ -41,27 +48,9 @@ class Crawler extends Phaser.Scene {
         this.physics.add.collider(this.character, this.terrainLayer);
         this.treeLayer.setCollisionByProperty({ collides: true });
         this.physics.add.collider(this.character, this.treeLayer);
-
-        // input
-        this.cursors = this.input.keyboard.createCursorKeys();
     }
 
     update() {
-        // slime movement
-        this.direction = new Phaser.Math.Vector2(0)
-        if(this.cursors.left.isDown) {
-            this.direction.x = -1
-        } else if(this.cursors.right.isDown) {
-            this.direction.x = 1
-        }
-
-        if(this.cursors.up.isDown) {
-            this.direction.y = -1
-        } else if(this.cursors.down.isDown) {
-            this.direction.y = 1
-        }
-
-        this.direction.normalize()
-        this.character.setVelocity(this.VEL * this.direction.x, this.VEL * this.direction.y)
+        this.character.update();
     }
 }
