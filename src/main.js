@@ -16,3 +16,6 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+// For easy access via terminal. Access scenes without typing `game.scene.keys.` every time
+game.events.once('ready', () => Object.assign(window, game.scene.keys));

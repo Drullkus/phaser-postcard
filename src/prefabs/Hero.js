@@ -9,29 +9,62 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
         this.body.setCollideWorldBounds(true);
 
         // set custom Hero properties
+        this.health = 10.0;
         this.direction = direction;
-        this.heroVelocity = 100;    // in pixels
+        this.controlVelocity = 100; // in pixels
         this.dashCooldown = 300;    // in ms
         this.hurtTimer = 250;       // in ms
 
         // initialize state machine managing hero (initial state, possible states, state args[])
         this.fsm = new StateMachine('idle', {
-            idle: new IdleState(),
-            move: new MoveState(),
-            swing: new SwingState(),
-            dash: new DashState(),
-            hurt: new HurtState(),
-            circular: new CircularState()
+            idle: new HeroIdleState(),
+            move: new HeroMoveState(),
+            swing: new HeroSwingState(),
+            dash: new HeroDashState(),
+            hurt: new HeroHurtState(),
         }, [scene, this]);   // pass these as arguments to maintain scene/object context in the FSM
     }
 
     update() {
         this.fsm.step();
     }
+
+    attack(target) {
+        target.hurt(4); // 3 hits to kill an enemy
+    }
+
+    hurt(damage) {
+        this.health = Math.max(0, this.health - damage);
+
+        if (this.health == 0) {
+            this.die();
+        }
+
+        this.fsm.transition('hurt');
+    }
+    
+    die() {
+        this.setTint(0x44_00_00);
+    }
+
+    swordStrike() {
+        const radius = 8;
+        const { x: centerX, y: centerY } = normalFromDirection(this.direction)
+            .multiply({ x: this.width * 0.5, y: this.height * 0.5 })
+            .add({ x: this.x, y: this.y });
+
+        const bodiesInRect = this.scene.physics.overlapRect(centerX - radius * 0.5, centerY - radius * 0.5, radius, radius);
+
+        for (let body of bodiesInRect) {
+            if (body != this.body && body.gameObject != null && typeof body.gameObject.hurt === 'function') {
+                this.attack(body.gameObject);
+            }
+        }
+    }
 }
 
 // hero-specific state classes
-class IdleState extends State {
+class HeroIdleState extends State {
     enter(scene, hero) {
         hero.setVelocity(0);
         hero.anims.play(`walk-${hero.direction}`);
@@ -42,7 +75,6 @@ class IdleState extends State {
         // use destructuring to make a local copy of the keyboard object
         const { left, right, up, down, space, shift } = scene.keys;
         const HKey = scene.keys.HKey;
-        const FKey = scene.keys.FKey;
 
         // transition to swing if pressing space
         if(Phaser.Input.Keyboard.JustDown(space)) {
@@ -59,11 +91,6 @@ class IdleState extends State {
         // hurt if H key input (just for demo purposes)
         if(Phaser.Input.Keyboard.JustDown(HKey)) {
             this.stateMachine.transition('hurt');
-            return;
-        }
-
-        if(Phaser.Input.Keyboard.JustDown(FKey)) {
-            this.stateMachine.transition('circular');
             return;
         }
 
@@ -75,7 +102,7 @@ class IdleState extends State {
     }
 }
 
-class MoveState extends State {
+class HeroMoveState extends State {
     execute(scene, hero) {
         // use destructuring to make a local copy of the keyboard object
         const { left, right, up, down, space, shift } = scene.keys;
@@ -97,11 +124,6 @@ class MoveState extends State {
         // hurt if H key input (just for demo purposes)
         if(Phaser.Input.Keyboard.JustDown(HKey)) {
             this.stateMachine.transition('hurt');
-            return;
-        }
-
-        if(Phaser.Input.Keyboard.JustDown(FKey)) {
-            this.stateMachine.transition('circular');
             return;
         }
 
@@ -129,14 +151,15 @@ class MoveState extends State {
         }
         // normalize movement vector, update hero position, and play proper animation
         moveDirection.normalize();
-        hero.setVelocity(hero.heroVelocity * moveDirection.x, hero.heroVelocity * moveDirection.y);
+        hero.setVelocity(hero.controlVelocity * moveDirection.x, hero.controlVelocity * moveDirection.y);
         hero.anims.play(`walk-${hero.direction}`, true);
     }
 }
 
-class SwingState extends State {
+class HeroSwingState extends State {
     enter(scene, hero) {
         hero.setVelocity(0);
+        hero.swordStrike();
         hero.anims.play(`swing-${hero.direction}`);
         hero.once('animationcomplete', () => {
             this.stateMachine.transition('idle');
@@ -144,23 +167,23 @@ class SwingState extends State {
     }
 }
 
-class DashState extends State {
+class HeroDashState extends State {
     enter(scene, hero) {
         hero.setVelocity(0);
         hero.anims.play(`swing-${hero.direction}`);
         hero.setTint(0x00AA00);     // turn green
         switch(hero.direction) {
             case 'up':
-                hero.setVelocityY(-hero.heroVelocity * 3);
+                hero.setVelocityY(-hero.controlVelocity * 3);
                 break;
             case 'down':
-                hero.setVelocityY(hero.heroVelocity * 3);
+                hero.setVelocityY(hero.controlVelocity * 3);
                 break;
             case 'left':
-                hero.setVelocityX(-hero.heroVelocity * 3);
+                hero.setVelocityX(-hero.controlVelocity * 3);
                 break;
             case 'right':
-                hero.setVelocityX(hero.heroVelocity * 3);
+                hero.setVelocityX(hero.controlVelocity * 3);
                 break;
         }
 
@@ -172,7 +195,7 @@ class DashState extends State {
     }
 }
 
-class HurtState extends State {
+class HeroHurtState extends State {
     enter(scene, hero) {
         hero.setVelocity(0);
         hero.anims.play(`walk-${hero.direction}`);
@@ -181,31 +204,22 @@ class HurtState extends State {
         // create knockback by sending body in direction opposite facing direction
         switch(hero.direction) {
             case 'up':
-                hero.setVelocityY(hero.heroVelocity*2);
+                hero.setVelocityY(hero.controlVelocity*2);
                 break;
             case 'down':
-                hero.setVelocityY(-hero.heroVelocity*2);
+                hero.setVelocityY(-hero.controlVelocity*2);
                 break;
             case 'left':
-                hero.setVelocityX(hero.heroVelocity*2);
+                hero.setVelocityX(hero.controlVelocity*2);
                 break;
             case 'right':
-                hero.setVelocityX(-hero.heroVelocity*2);
+                hero.setVelocityX(-hero.controlVelocity*2);
                 break;
         }
 
         // set recovery timer
         scene.time.delayedCall(hero.hurtTimer, () => {
             hero.clearTint();
-            this.stateMachine.transition('idle');
-        });
-    }
-}
-
-class CircularState extends State {
-    enter(scene, hero) {
-        hero.setVelocity(0);
-        hero.anims.play('circular-attack').once('animationcomplete', () => {
             this.stateMachine.transition('idle');
         });
     }

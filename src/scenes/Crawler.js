@@ -5,14 +5,12 @@ class Crawler extends Phaser.Scene {
         super('crawlerScene');
     }
 
-    init() {
-        this.VEL = 100  // slime velocity constant
-    }
-
     create() {
         this.createMap();
 
         this.createCharacter();
+
+        this.createEnemy();
 
         this.setupCamera();
     }
@@ -36,21 +34,27 @@ class Crawler extends Phaser.Scene {
         this.keys.HKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
         this.keys.FKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
         
-        this.character = new Hero(this, ...canvasPos(0.5), 'hero', 0, 'down');
+        this.hero = new Hero(this, ...canvasPos(0.5), 'hero', 0, 'down');
+    }
+
+    createEnemy() {
+        this.enemy = new Enemy(this, ...canvasPos(0.45), 'hero', 4, 'right');
     }
 
     setupCamera() {
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-        this.cameras.main.startFollow(this.character, true, 0.25, 0.25);
+        this.cameras.main.startFollow(this.hero, true, 0.25, 0.25);
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
         this.terrainLayer.setCollisionByProperty({ collides: true });
-        this.physics.add.collider(this.character, this.terrainLayer);
         this.treeLayer.setCollisionByProperty({ collides: true });
-        this.physics.add.collider(this.character, this.treeLayer);
+        this.physics.add.collider(this.hero, this.terrainLayer);
+        this.physics.add.collider(this.hero, this.treeLayer);
+        this.physics.add.collider(this.enemy, this.terrainLayer);
+        this.physics.add.collider(this.enemy, this.treeLayer);
     }
 
     update() {
-        this.character.update();
+        this.hero.update();
     }
 }

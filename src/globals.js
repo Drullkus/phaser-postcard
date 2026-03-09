@@ -26,3 +26,17 @@ function canvasPos(fractX, fractY) {
 
     return [canvasX(fractX), canvasY(fractY)]
 }
+
+function normalFromDirection(direction) {
+    switch (direction) {
+        case 'up':
+            return new Phaser.Math.Vector2(0, -1);
+        case 'right':
+            return new Phaser.Math.Vector2(1, 0);
+        case 'down':
+            return new Phaser.Math.Vector2(0, 1);
+        case 'left':
+            return new Phaser.Math.Vector2(-1, 0);
+    }
+    return new Phaser.Math.Vector2(0, 0);
+}
