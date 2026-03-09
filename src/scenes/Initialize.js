@@ -12,10 +12,9 @@ class Initialize extends Phaser.Scene {
 
         this.load.image('koboldFace', 'temp/kobold-crop.png');
 
-        this.load.spritesheet('hero', 'temp/hero-sheet.png', {
-            frameWidth: 32,
-            frameHeight: 32,
-        });
+        this.load.spritesheet('hero', 'temp/hero-sheet.png', { frameWidth: 32 });
+
+        this.load.spritesheet('debris', 'temp/debris.png', { frameWidth: 16 });
     }
 
     create() {
@@ -79,6 +78,14 @@ class Initialize extends Phaser.Scene {
                 frames: [ 16, 16, 16, 17, 18, 24, 25, 26, 21, 22, 30, 29, 28, 18, 19, 19, 19 ]
             })
         });
+
+        [0, 1, 2, 3].forEach((columnIndex, _index, list) => this.anims.create({
+            key: `debris-${columnIndex}`,
+            frames: this.anims.generateFrameNumbers('debris', {
+                frames: [1, 0, 1, 2, 3].map(rowIndex => rowIndex * list.length + columnIndex)
+            }),
+            frameRate: 20
+        }))
 
         this.scene.start(this.queryMode);
     }

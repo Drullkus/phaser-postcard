@@ -13,6 +13,16 @@ class Crawler extends Phaser.Scene {
         this.createEnemies();
 
         this.setupCamera();
+
+        this.debrisEmitter = this.add.particles(0, 0, 'debris', {
+            anim: [0, 1, 2, 3].map(index => `debris-${index}`),
+            lifespan: { min: 50, max: 150 },
+            speed: { min: 10, max: 100 },
+            scale: { min: 0.5, max: 2 },
+            rotate: { start: 0, end: 90 },
+            emitting: false,
+            particleBringToTop: false
+        });
     }
     
     createMap() {
