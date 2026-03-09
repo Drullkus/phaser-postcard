@@ -25,8 +25,15 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         }, [scene, this]);   // pass these as arguments to maintain scene/object context in the FSM
     }
 
+    findTarget() {
+        const { x: tileX, y: tileY} = this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
+        this.scene.tileLayer.putTileAt(1, tileX, tileY);
+    }
+
     update() {
         this.fsm.step();
+
+        this.findTarget();
     }
 
     attack(target) {

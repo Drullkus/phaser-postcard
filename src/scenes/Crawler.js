@@ -10,7 +10,7 @@ class Crawler extends Phaser.Scene {
 
         this.createCharacter();
 
-        this.createEnemy();
+        this.createEnemies();
 
         this.setupCamera();
     }
@@ -30,10 +30,8 @@ class Crawler extends Phaser.Scene {
         this.hero = new Hero(this, heroMarker.x, heroMarker.y, 'hero', 0, 'down');
     }
 
-    createEnemy() {
-        this.map.filterObjects('GameObjects', obj => obj.name === 'Enemy').forEach(({ x, y }) => {
-            this.enemy = new Enemy(this, x, y, 'hero', 4, 'right');
-        });
+    createEnemies() {
+        this.enemies = this.map.filterObjects('GameObjects', obj => obj.name === 'Enemy').map(({ x, y }) => new Enemy(this, x, y, 'hero', 4, 'right'));
     }
 
     setupCamera() {
@@ -43,11 +41,12 @@ class Crawler extends Phaser.Scene {
 
         this.tileLayer.setCollisionByProperty({ collides: true });
         this.physics.add.collider(this.hero, this.tileLayer);
-        this.physics.add.collider(this.enemy, this.tileLayer);
+        this.enemies.forEach(enemy => this.physics.add.collider(enemy, this.tileLayer));
     }
 
     update() {
         this.hero.update();
+        this.enemies.forEach(enemy => enemy.update());
     }
 
     playerKilled() {
