@@ -25,6 +25,10 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
         }, [scene, this]);   // pass these as arguments to maintain scene/object context in the FSM
     }
 
+    getTilePos() {
+        return this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
+    }
+
     update() {
         this.fsm.step();
     }

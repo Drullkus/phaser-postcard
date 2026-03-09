@@ -26,8 +26,26 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     findTarget() {
-        const { x: tileX, y: tileY} = this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
-        this.scene.tileLayer.putTileAt(1, tileX, tileY);
+        const { x: posTileX, y: posTileY} = this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
+        const { x: targetTileX, y: targetTileY} = this.scene.hero.getTilePos();
+
+        const tracer = tracePixelLine(posTileX, posTileY, targetTileX, targetTileY);
+
+        for (let {x: tileX, y: tileY} of tracer) {
+            if (this.scene.tileLayer.getTileAt(tileX, tileY).collides) {
+                return; // Terminate, vision to target obstructed
+            } else { // TODO remove this branch
+                this.scene.tileLayer.putTileAt(1, tileX, tileY); // DEBUG places new tile upon scan coverage
+            }
+        }
+
+        if (tracer.done) {
+            // TODO begin pathing
+        }
+    }
+
+    getTilePos() {
+        return this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
     }
 
     update() {
