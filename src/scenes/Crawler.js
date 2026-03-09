@@ -20,6 +20,39 @@ class Crawler extends Phaser.Scene {
 
         this.tileset = this.map.addTilesetImage('postcardtiles', 'tilesetImage');
         this.tileLayer = this.map.createLayer('TileLayer', this.tileset, 0, 0);
+
+        this.initializeFinder();
+    }
+
+    initializeFinder() {
+        // Adapted from https://www.dynetisgames.com/2018/03/06/pathfinding-easystar-phaser-3/
+        var grid = [];
+        for (var y = 0; y < this.map.height; y++) {
+            var col = [];
+            for (var x = 0; x < this.map.width; x++) {
+                // In each cell we store the ID of the tile, which corresponds
+                // to its index in the tileset of the map ("ID" field in Tiled)
+                col.push(this.tileLayer.getTileAt(x, y).index);
+            }
+            grid.push(col);
+        }
+
+        game.finder.setGrid(grid);
+
+        // Setup finder rules
+        const tileset = this.tileset;
+        const properties = tileset.tileProperties;
+        const acceptableTiles = [];
+
+        for (let i = tileset.firstgid-1; i < tileset.total; i++) { // firstgid and total are fields from Tiled that indicate the range of IDs that the tiles can take in that tileset
+            if (!properties.hasOwnProperty(i)) {
+                // If there is no property indicated at all, it means it's a walkable tile
+                acceptableTiles.push(i+1);
+                continue;
+            }
+            if(!properties[i].collide) acceptableTiles.push(i + 1);
+        }
+        game.finder.setAcceptableTiles(acceptableTiles);
     }
 
     createCharacter() {

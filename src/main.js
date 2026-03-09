@@ -1,3 +1,16 @@
+/*
+Title: Game Title
+Author: Drullkus
+
+Approximate hours spent: 20
+
+EasyStarJS: https://easystarjs.com
+EasyStar initialization: https://www.dynetisgames.com/2018/03/06/pathfinding-easystar-phaser-3/
+Generator functions https://www.w3schools.com/js/js_generators.asp
+tracePixelLine https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#All_cases
+True modulo https://stackoverflow.com/a/4467559
+*/
+
 const config = {
     parent: 'postcard-game',
     canvasStyle: 'display: block;', // Set to block, as otherwise it will have a 6-pixel gap underneath
@@ -18,6 +31,8 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+game.finder = new EasyStar.js();
+game.finder.disableDiagonals();
 
 // For easy access via terminal. Access scenes without typing `game.scene.keys.` every time
 game.events.once('ready', () => Object.assign(window, game.scene.keys));

@@ -14,6 +14,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.controlVelocity = 100; // in pixels
         this.dashCooldown = 300;    // in ms
         this.hurtTimer = 250;       // in ms
+        this.pathNodes = [];
 
         // initialize state machine managing npc (initial state, possible states, state args[])
         this.fsm = new StateMachine('idle', {
@@ -26,32 +27,80 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     findTarget() {
-        const { x: posTileX, y: posTileY} = this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
+        const { x: posTileX, y: posTileY} = this.getTilePos();
         const { x: targetTileX, y: targetTileY} = this.scene.hero.getTilePos();
 
-        const tracer = tracePixelLine(posTileX, posTileY, targetTileX, targetTileY);
-
-        for (let {x: tileX, y: tileY} of tracer) {
+        // Check line of sight first
+        for (let {x: tileX, y: tileY} of tracePixelLine(posTileX, posTileY, targetTileX, targetTileY)) {
             if (this.scene.tileLayer.getTileAt(tileX, tileY).collides) {
                 return; // Terminate, vision to target obstructed
-            } else { // TODO remove this branch
-                this.scene.tileLayer.putTileAt(1, tileX, tileY); // DEBUG places new tile upon scan coverage
             }
         }
 
-        if (tracer.done) {
-            // TODO begin pathing
+        game.finder.findPath(posTileX, posTileY, targetTileX, targetTileY, path => { this.startPathing(path); });
+        game.finder.calculate();
+    }
+
+    startPathing(path) {
+        // console.log(this, path);
+
+        path.shift(); // remove first
+
+        this.pathNodes = path;
+
+        this.updatePathingMovement();
+    }
+
+    checkPathing() {
+        if (this.pathNodes.length == 0) {
+            return;
+        }
+
+        const node = this.pathNodes[0];
+        const nodeWorldPos = this.scene.tileLayer.tileToWorldXY(node.x + 0.5, node.y + 0.5, null, this.scene.cameras.main);
+
+        const distance = Phaser.Math.Distance.BetweenPoints(this, nodeWorldPos);
+
+        
+
+        if (this.body.speed > 1) {
+            if (distance < 4) {
+                this.body.reset(nodeWorldPos.x, nodeWorldPos.y);
+                this.pathNodes.shift();
+                if (this.pathNodes.length > 0) {
+                    this.updatePathingMovement();
+                }
+            }
+        } else {
+            // TODO better stuck detection
+            this.pathNodes = [];
         }
     }
 
-    getTilePos() {
-        return this.scene.tileLayer.worldToTileXY(this.x, this.y, true, null, this.scene.cameras.main);
+    updatePathingMovement() {
+        if (this.pathNodes.length == 0) {
+            return;
+        }
+
+        const node = this.pathNodes[0];
+        const chase = this.pathNodes.length == 1;
+
+        const worldPos = chase ? this.scene.hero : this.scene.tileLayer.tileToWorldXY(node.x + 0.5, node.y + 0.5, null, this.scene.cameras.main);
+        this.scene.physics.moveToObject(this, worldPos, this.controlVelocity, chase ? 1000 : null);
+    }
+
+    getTilePos(snapToGrid = true) {
+        return this.scene.tileLayer.worldToTileXY(this.x, this.y, snapToGrid, null, this.scene.cameras.main);
     }
 
     update() {
         this.fsm.step();
 
-        this.findTarget();
+        if (this.pathNodes.length == 0) {
+            this.findTarget();
+        } else {
+            this.checkPathing();
+        }
     }
 
     attack(target) {
