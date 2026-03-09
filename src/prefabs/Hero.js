@@ -34,17 +34,35 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
     }
 
     hurt(damage) {
+        if (this.health == 0) {
+            return; // Currently dying, don't retrigger death effects
+        }
+
         this.health = Math.max(0, this.health - damage);
 
         if (this.health == 0) {
             this.die();
+        } else {
+            this.fsm.transition('hurt');
         }
-
-        this.fsm.transition('hurt');
     }
     
     die() {
         this.setTint(0x44_00_00);
+
+        this.scene.tweens.add({
+            targets: this,
+            alpha: { from: 1, to: 0 },
+            scale: { from: 1, to: 0.1 },
+            angle: { from: 0, to: 360 },
+            ease: 'Sine.easeInOut',
+            duration: 1000,
+            repeat: 0,
+            onComplete: () => {
+                this.destroy();
+                this.scene.playerKilled();
+            }
+        });
     }
 
     swordStrike() {
@@ -74,7 +92,6 @@ class HeroIdleState extends State {
     execute(scene, hero) {
         // use destructuring to make a local copy of the keyboard object
         const { left, right, up, down, space, shift } = scene.keys;
-        const HKey = scene.keys.HKey;
 
         // transition to swing if pressing space
         if(Phaser.Input.Keyboard.JustDown(space)) {
@@ -85,12 +102,6 @@ class HeroIdleState extends State {
         // transition to dash if pressing shift
         if(Phaser.Input.Keyboard.JustDown(shift)) {
             this.stateMachine.transition('dash');
-            return;
-        }
-
-        // hurt if H key input (just for demo purposes)
-        if(Phaser.Input.Keyboard.JustDown(HKey)) {
-            this.stateMachine.transition('hurt');
             return;
         }
 
@@ -106,8 +117,6 @@ class HeroMoveState extends State {
     execute(scene, hero) {
         // use destructuring to make a local copy of the keyboard object
         const { left, right, up, down, space, shift } = scene.keys;
-        const HKey = scene.keys.HKey;
-        const FKey = scene.keys.FKey;
 
         // transition to swing if pressing space
         if(Phaser.Input.Keyboard.JustDown(space)) {
@@ -118,12 +127,6 @@ class HeroMoveState extends State {
         // transition to dash if pressing shift
         if(Phaser.Input.Keyboard.JustDown(shift)) {
             this.stateMachine.transition('dash');
-            return;
-        }
-
-        // hurt if H key input (just for demo purposes)
-        if(Phaser.Input.Keyboard.JustDown(HKey)) {
-            this.stateMachine.transition('hurt');
             return;
         }
 

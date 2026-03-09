@@ -1,6 +1,5 @@
 // Inspired by "Extension functions" from Kotlin; this file adds functions to object prototypes without modifying the prototype's original js code
 
-
 Phaser.Scene.prototype.createButton = function createButton(text, posX, posY, style, onDown) {
     const buttonTextObj = this.add.text(posX, posY, text, style);
 

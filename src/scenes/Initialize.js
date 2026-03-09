@@ -7,8 +7,8 @@ class Initialize extends Phaser.Scene {
     preload() {
         this.load.path = './assets/';
 
-        this.load.image('tilesetImage', 'temp/tileset.png');
-        this.load.tilemapTiledJSON('tilemapJSON', 'temp/overworld.json');
+        this.load.image('tilesetImage', 'temp/postcardtiles.png');
+        this.load.tilemapTiledJSON('tilemapJSON', 'temp/postcardtiles.json');
 
         this.load.image('koboldFace', 'temp/kobold-crop.png');
 

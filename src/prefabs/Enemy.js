@@ -34,6 +34,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     hurt(damage) {
+        if (this.health == 0) {
+            return; // Currently dying, don't retrigger death effects
+        }
+
         this.health = Math.max(0, this.health - damage);
 
         if (this.health == 0) {
@@ -45,6 +49,19 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     
     die() {
         this.setTint(0x44_00_00);
+
+        this.scene.tweens.add({
+            targets: this,
+            alpha: { from: 1, to: 0 },
+            scale: { from: 1, to: 0.1 },
+            angle: { from: 0, to: Math.random() < 0.5 ? 360 : -360 },
+            ease: 'Sine.easeInOut',
+            duration: 1000,
+            repeat: 0,
+            onComplete: () => {
+                this.destroy();
+            }
+        });
     }
 }
 

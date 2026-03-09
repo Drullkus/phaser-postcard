@@ -4,6 +4,8 @@ const config = {
 
     type: Phaser.WEBGL,
     width: 750, height: 500, // 3:2 ratio
+    antialias: true,
+
     useTicker: true,
     scene: [ new Initialize(urlQueryParams.get('mode')), MainMenu, Crawler, Credits ],
 

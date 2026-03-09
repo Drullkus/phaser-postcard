@@ -1,0 +1,57 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
+        "/Users/drullkus/Documents/UCSC Edu/CMPM-120/LecturePractice-Slime-World/assets/overworld.tmx": {
+            "scale": 2.5709375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 319.92220736599,
+                "y": 239.99027592074876
+            }
+        },
+        "/Users/drullkus/Documents/UCSC Edu/CMPM-120/LecturePractice-Slime-World/assets/overworld.tmx#tileset": {
+            "scaleInDock": 1
+        },
+        "postcardtiles.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1791,
+                "y": 1344
+            }
+        },
+        "postcardtiles.tmx#postcardtiles": {
+            "scaleInDock": 0.5
+        }
+    },
+    "last.exportedFilePath": "/Users/drullkus/Documents/UCSC Edu/CMPM-120/first-postcard/assets/temp",
+    "last.imagePath": "/Users/drullkus/Documents/UCSC Edu/CMPM-120/first-postcard/assets/temp",
+    "map.fixedSize": false,
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "openFiles": [
+    ],
+    "project": "postcardtiles.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "/Users/drullkus/Documents/UCSC Edu/CMPM-120/LecturePractice-Slime-World/assets/overworld.tmx",
+        "postcardtiles.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    }
+}
