@@ -11,6 +11,8 @@ const menuTextStyle = {
     align: 'center'
 };
 
+const radiansQuarter = Math.PI / 2.0; // 1/4 of a circle
+
 function canvasX(fractX) {
     return game.config.width * fractX;
 }
@@ -79,5 +81,25 @@ function* tracePixelLine(x0, y0, x1, y1) {
             error = error + dX;
             y = y + sY;
         }
+    }
+}
+
+/** True modulo, as JS's % remainder operator can make negatives. https://stackoverflow.com/a/4467559 */
+function mod(a, b) {
+    return ((a % b) + b) % b;
+}
+
+function getFacingDirection(originPoint, pointFaceTowards) {
+    const angle = Phaser.Math.Angle.BetweenPoints(originPoint, pointFaceTowards);
+    const rotationIndex = mod(Math.round(angle / radiansQuarter), 4);
+    switch (rotationIndex) {
+        case 0:
+            return 'right';
+        case 1:
+            return 'up';
+        case 2:
+            return 'left';
+        case 3:
+            return 'down';
     }
 }

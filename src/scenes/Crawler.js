@@ -51,17 +51,16 @@ class Crawler extends Phaser.Scene {
 
         // Setup finder rules
         const tileset = this.tileset;
-        const properties = tileset.tileProperties;
         const acceptableTiles = [];
 
-        for (let i = tileset.firstgid-1; i < tileset.total; i++) { // firstgid and total are fields from Tiled that indicate the range of IDs that the tiles can take in that tileset
-            if (!properties.hasOwnProperty(i)) {
-                // If there is no property indicated at all, it means it's a walkable tile
-                acceptableTiles.push(i+1);
-                continue;
+        for (let index = tileset.firstgid; index <= tileset.total; index++) {
+            const tile = tileset.getTileProperties(index);
+            // console.log(index, tile);
+            if (!tile.collides) {
+                acceptableTiles.push(index);
             }
-            if(!properties[i].collide) acceptableTiles.push(i + 1);
         }
+        // console.log(acceptableTiles);
         game.finder.setAcceptableTiles(acceptableTiles);
     }
 

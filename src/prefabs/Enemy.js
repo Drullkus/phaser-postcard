@@ -15,6 +15,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.dashCooldown = 300;    // in ms
         this.hurtTimer = 250;       // in ms
         this.pathNodes = [];
+        this.debug = false;
 
         // initialize state machine managing npc (initial state, possible states, state args[])
         this.fsm = new StateMachine('idle', {
@@ -27,11 +28,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     findTarget() {
-        const { x: posTileX, y: posTileY} = this.getTilePos();
-        const { x: targetTileX, y: targetTileY} = this.scene.hero.getTilePos();
+        const { x: posTileX, y: posTileY } = this.getTilePos();
+        const { x: targetTileX, y: targetTileY } = this.scene.hero.getTilePos();
 
         // Check line of sight first
-        for (let {x: tileX, y: tileY} of tracePixelLine(posTileX, posTileY, targetTileX, targetTileY)) {
+        for (const { x: tileX, y: tileY } of tracePixelLine(posTileX, posTileY, targetTileX, targetTileY)) {
             if (this.scene.tileLayer.getTileAt(tileX, tileY).collides) {
                 return; // Terminate, vision to target obstructed
             }
@@ -44,36 +45,50 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     startPathing(path) {
         // console.log(this, path);
 
-        path.shift(); // remove first
+        path.shift(); // remove first node, on the tile already or else it may slightly backtrack
+
+        if (this.debug) { // Debug
+            for (const { x: tileX, y: tileY } of path) {
+                const nodeWorldPos = this.scene.tileLayer.tileToWorldXY(tileX + 0.5, tileY + 0.5, null, this.scene.cameras.main);
+                this.scene.debrisEmitter.emitParticleAt(nodeWorldPos.x, nodeWorldPos.y, 1);
+            }
+        }
 
         this.pathNodes = path;
+        this.fsm.transition('move');
 
         this.updatePathingMovement();
     }
 
+    stopPathing() {
+        this.pathNodes = [];
+        this.fsm.transition('idle');
+    }
+
     checkPathing() {
         if (this.pathNodes.length == 0) {
+            this.stopPathing();
             return;
         }
 
         const node = this.pathNodes[0];
         const nodeWorldPos = this.scene.tileLayer.tileToWorldXY(node.x + 0.5, node.y + 0.5, null, this.scene.cameras.main);
 
-        const distance = Phaser.Math.Distance.BetweenPoints(this, nodeWorldPos);
+        const distance = Phaser.Math.Distance.BetweenPoints(this, nodeWorldPos);        
 
-        
-
-        if (this.body.speed > 1) {
-            if (distance < 4) {
-                this.body.reset(nodeWorldPos.x, nodeWorldPos.y);
-                this.pathNodes.shift();
-                if (this.pathNodes.length > 0) {
-                    this.updatePathingMovement();
-                }
+        if (distance < 4) {
+            this.body.reset(nodeWorldPos.x, nodeWorldPos.y);
+            this.pathNodes.shift();
+            if (this.pathNodes.length > 0) {
+                this.updatePathingMovement();
             }
-        } else {
-            // TODO better stuck detection
-            this.pathNodes = [];
+
+            return;
+        }
+
+        // Stuck detection
+        if (this.body.speed < this.controlVelocity * 0.5) {
+            this.stopPathing();
         }
     }
 
@@ -86,7 +101,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         const chase = this.pathNodes.length == 1;
 
         const worldPos = chase ? this.scene.hero : this.scene.tileLayer.tileToWorldXY(node.x + 0.5, node.y + 0.5, null, this.scene.cameras.main);
-        this.scene.physics.moveToObject(this, worldPos, this.controlVelocity, chase ? 1000 : null);
+        this.scene.physics.moveToObject(this, worldPos, this.controlVelocity);
+
+        this.direction = getFacingDirection(this, worldPos); 
+        this.anims.play(`walk-${this.direction}`, true);
     }
 
     getTilePos(snapToGrid = true) {
@@ -94,13 +112,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
-        this.fsm.step();
-
-        if (this.pathNodes.length == 0) {
-            this.findTarget();
-        } else {
-            this.checkPathing();
+        if (this.health <= 0) {
+            return;
         }
+        this.fsm.step();
     }
 
     attack(target) {
@@ -136,6 +151,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.destroy();
             }
         });
+
+        this.setVelocity(0);
     }
 }
 
@@ -145,24 +162,26 @@ class NPCIdleState extends State {
         npc.setVelocity(0);
         npc.anims.play(`walk-${npc.direction}`);
         npc.anims.stop();
+
+        if (npc.debug) {
+            npc.setTint(0xFF_FF_FF); // Clear tint
+        }
     }
 
     execute(scene, npc) {
-        // TODO scan for player then pathfind towards
+        npc.findTarget();
     }
 }
 
 class NPCMoveState extends State {
+    enter(scene, npc) {
+        if (npc.debug) {
+            npc.setTint(0x88_88_FF); // Blue
+        }
+    }
+
     execute(scene, npc) {
-        // handle movement
-        let moveDirection = new Phaser.Math.Vector2(0, 0);
-
-        // TODO pathfind towards player
-
-        // normalize movement vector, update npc position, and play proper animation
-        moveDirection.normalize();
-        npc.setVelocity(npc.controlVelocity * moveDirection.x, npc.controlVelocity * moveDirection.y);
-        npc.anims.play(`walk-${npc.direction}`, true);
+        npc.checkPathing();
     }
 }
 
