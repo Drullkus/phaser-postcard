@@ -185,6 +185,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
             return; // Currently dying, don't retrigger death effects
         }
 
+        this.scene.strikeSound.play();
+
         this.health = Math.max(0, this.health - damage);
 
         if (this.health == 0) {
@@ -217,7 +219,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     swordStrike() {
-        if (!this.canTargetHero()) {
+        if (!this.canTargetHero() || this.health <= 0) {
             return;
         }
 

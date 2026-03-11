@@ -15,6 +15,8 @@ class Initialize extends Phaser.Scene {
         this.load.spritesheet('hero', 'temp/hero-sheet.png', { frameWidth: 32 });
 
         this.load.spritesheet('debris', 'temp/debris.png', { frameWidth: 16 });
+
+        this.load.audio('strikeHit', 'temp/strike-hit.wav');
     }
 
     create() {

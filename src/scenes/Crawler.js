@@ -23,6 +23,10 @@ class Crawler extends Phaser.Scene {
             emitting: false,
             particleBringToTop: false
         });
+
+        this.strikeSound = this.sound.add('strikeHit');
+        this.strikeSound.volume = 0.25;
+        this.strikeSound.detune = -900;
     }
     
     createMap() {

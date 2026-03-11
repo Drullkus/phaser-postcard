@@ -45,6 +45,8 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
             return; // Currently dying, don't retrigger death effects
         }
 
+        this.scene.strikeSound.play();
+
         const newHealth = Math.max(0, this.health - damage);
 
         if (newHealth == 0) {
