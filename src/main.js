@@ -21,7 +21,7 @@ const config = {
     antialias: true,
 
     useTicker: true,
-    scene: [ new Initialize(urlQueryParams.get('mode')), MainMenu, Crawler, Credits ],
+    scene: [ new Initialize(urlQueryParams.get('mode')), MainMenu, Crawler, Credits, GameOver ],
 
     physics: {
         default: "arcade",

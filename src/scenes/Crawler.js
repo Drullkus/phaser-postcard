@@ -104,7 +104,6 @@ class Crawler extends Phaser.Scene {
     }
 
     playerKilled() {
-        // TODO game over
-        console.log("game over");
+        this.scene.launch('gameOverScene');
     }
 }
