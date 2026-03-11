@@ -12,7 +12,7 @@ class Crawler extends Phaser.Scene {
 
         this.createEnemies();
 
-        this.setupCamera();
+        this.setupCameraAndCollision();
 
         this.debrisEmitter = this.add.particles(0, 0, 'debris', {
             anim: [0, 1, 2, 3].map(index => `debris-${index}`),
@@ -76,14 +76,26 @@ class Crawler extends Phaser.Scene {
         this.enemies = this.map.filterObjects('GameObjects', obj => obj.name === 'Enemy').map(({ x, y }) => new Enemy(this, x, y, 'hero', 4, 'right'));
     }
 
-    setupCamera() {
+    setupCameraAndCollision() {
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(this.hero, true, 0.25, 0.25);
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
         this.tileLayer.setCollisionByProperty({ collides: true });
         this.physics.add.collider(this.hero, this.tileLayer);
-        this.enemies.forEach(enemy => this.physics.add.collider(enemy, this.tileLayer));
+        this.enemies.forEach(enemy => {
+            this.physics.add.collider(enemy, this.tileLayer);
+            this.physics.add.collider(enemy, this.hero);
+            enemy.body.onCollide = true;
+        });
+
+        this.physics.world.on('collide', (gameObject1, gameObject2, body1, body2) => {
+            if (Object.getPrototypeOf(gameObject1) == Enemy.prototype && Object.getPrototypeOf(gameObject2) == Hero.prototype) {
+                gameObject1.swordStrike();
+            } else if (Object.getPrototypeOf(gameObject2) == Enemy.prototype && Object.getPrototypeOf(gameObject1) == Hero.prototype) {
+                gameObject2.swordStrike();
+            }
+        });
     }
 
     update() {
@@ -93,5 +105,6 @@ class Crawler extends Phaser.Scene {
 
     playerKilled() {
         // TODO game over
+        console.log("game over");
     }
 }

@@ -5,8 +5,9 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);           // add Hero to existing scene
         scene.physics.add.existing(this);   // add physics body to scene
 
-        this.body.setSize(this.width / 2, this.height / 2);
+        this.body.setSize(this.width * 0.5, this.height * 0.5);
         this.body.setCollideWorldBounds(true);
+        this.body.setFriction(1.0);
 
         // set custom Hero properties
         this.health = 10.0;
@@ -30,7 +31,9 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
-        this.fsm.step();
+        if (this.health > 0) {
+            this.fsm.step();
+        }
     }
 
     attack(target) {
@@ -42,16 +45,23 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
             return; // Currently dying, don't retrigger death effects
         }
 
-        this.health = Math.max(0, this.health - damage);
+        const newHealth = Math.max(0, this.health - damage);
 
-        if (this.health == 0) {
+        if (newHealth == 0) {
             this.die();
         } else {
+            this.health = newHealth;
             this.fsm.transition('hurt');
         }
     }
     
     die() {
+        if (this.health == 0) {
+            return; // Currently dying, don't retrigger death effects
+        }
+
+        this.health = 0;
+
         this.setTint(0x44_00_00);
 
         this.scene.tweens.add({
@@ -63,8 +73,8 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
             duration: 1000,
             repeat: 0,
             onComplete: () => {
-                this.destroy();
                 this.scene.playerKilled();
+                this.destroy();
             }
         });
     }

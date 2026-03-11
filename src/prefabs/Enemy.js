@@ -5,8 +5,9 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);           // add npc to existing scene
         scene.physics.add.existing(this);   // add physics body to scene
 
-        this.body.setSize(this.width / 2, this.height / 2);
+        this.body.setSize(this.width * 0.5, this.height * 0.5);
         this.body.setCollideWorldBounds(true);
+        this.body.setFriction(1.0);
 
         // set custom properties
         this.health = 10.0;
@@ -33,6 +34,15 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Called during idle state
     findTarget() {
+        if (!this.canTargetHero()) {
+            return;
+        }
+
+        if (this.isHeroInRange()) {
+            this.startPathing([]);
+            return;
+        }
+
         const { x: posTileX, y: posTileY } = this.getTilePos();
         const { x: targetTileX, y: targetTileY } = this.scene.hero.getTilePos();
 
@@ -98,7 +108,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     updatePathing() {
         // if (this.debug) console.log("updatePathing");
 
-        if (this.shouldStopPathing()) {
+        if (!this.canTargetHero() || this.shouldStopPathing()) {
             this.stopPathing();
             return;
         }
@@ -134,8 +144,12 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         return noNodesLeft && playerOutOfRange;
     }
 
+    canTargetHero() {
+        return this.scene.hero.health > 0;
+    }
+
     isHeroInRange() {
-        return Phaser.Math.Distance.BetweenPoints(this, this.scene.hero) > tileSize * 1.33;
+        return Phaser.Math.Distance.BetweenPoints(this, this.scene.hero) < tileSize * 1.33;
     }
 
     stopPathing() {
@@ -200,6 +214,31 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         });
 
         this.setVelocity(0);
+    }
+
+    swordStrike() {
+        if (!this.canTargetHero()) {
+            return;
+        }
+
+        this.fsm.transition('swing');
+
+        const radius = 8;
+        const { x: centerX, y: centerY } = normalFromDirection(this.direction)
+            .multiply({ x: this.width * 0.5, y: this.height * 0.5 })
+            .add({ x: this.x, y: this.y });
+
+        const bodiesInRect = this.scene.physics.overlapRect(centerX - radius * 0.5, centerY - radius * 0.5, radius, radius);
+
+        for (let body of bodiesInRect) {
+            if (body != this.body && body.gameObject != null && typeof body.gameObject.hurt === 'function') {
+                this.attack(body.gameObject);
+            }
+        }
+    }
+
+    attack(target) {
+        target.hurt(1);
     }
 }
 
@@ -295,6 +334,7 @@ class NPCHurtState extends State {
         // set recovery timer
         scene.time.delayedCall(npc.hurtTimer, () => {
             npc.clearTint();
+            npc.clearPathing();
             this.stateMachine.transition('idle');
         });
     }
