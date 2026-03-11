@@ -5,6 +5,8 @@ const urlQueryParams = new URLSearchParams(window.location.search);
 const buttonColor = '#2d2d2d';
 const buttonColorOver = '#8d8d8d';
 
+const tileSize = 64;
+
 const menuTextStyle = {
     fontFamily: 'Helvetica', // FIXME custom font
     color: '#FFF',
@@ -95,11 +97,11 @@ function getFacingDirection(originPoint, pointFaceTowards) {
     switch (rotationIndex) {
         case 0:
             return 'right';
-        case 1:
+        case 3:
             return 'up';
         case 2:
             return 'left';
-        case 3:
+        case 1:
             return 'down';
     }
 }
